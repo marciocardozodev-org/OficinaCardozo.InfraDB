@@ -1,0 +1,63 @@
+name: CI/CD - Infra DB
+
+on:
+  pull_request:
+    branches: [ develop, homolog, master ]
+  push:
+    branches: [ develop, homolog, master ]
+
+env:
+  DOTNET_VERSION: 8.0.x
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.6
+        terraform_wrapper: false
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init -input=false
+
+    - name: Terraform Validate
+      working-directory: ./terraform
+      run: terraform validate
+
+    - name: Set deployment flag
+      run: |
+        if [ "${GITHUB_EVENT_NAME}" = "push" ] && { [ "${GITHUB_REF}" = "refs/heads/homolog" ] || [ "${GITHUB_REF}" = "refs/heads/master" ]; }; then
+          echo "DEPLOY_ENABLED=true" >> "$GITHUB_ENV"
+        else
+          echo "DEPLOY_ENABLED=false" >> "$GITHUB_ENV"
+        fi
+
+    - name: Terraform Plan
+      if: github.event_name == 'pull_request'
+      working-directory: ./terraform
+      run: terraform plan -input=false
+
+    - name: Configure AWS credentials
+      if: env.DEPLOY_ENABLED == 'true'
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Terraform Plan (push)
+      if: env.DEPLOY_ENABLED == 'true'
+      working-directory: ./terraform
+      run: terraform plan -input=false -out=tfplan
+
+    - name: Terraform Apply
+      if: env.DEPLOY_ENABLED == 'true'
+      working-directory: ./terraform
+      run: terraform apply -input=false -auto-approve tfplan
