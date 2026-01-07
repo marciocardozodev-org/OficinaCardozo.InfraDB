@@ -41,6 +41,7 @@ variable "db_password" {
   description = "Senha do banco (min 8 chars). Usar secret/tfvars em produção."
   type        = string
   sensitive   = true
+  default     = ""
 
   validation {
     condition     = length(var.db_password) == 0 || length(var.db_password) >= 8
