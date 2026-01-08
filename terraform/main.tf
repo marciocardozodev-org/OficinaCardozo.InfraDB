@@ -62,20 +62,20 @@ variable "db_password" {
 variable "db_subnet_ids" {
   description = "Lista de subnets privadas onde o RDS será criado."
   type        = list(string)
-  default     = data.terraform_remote_state.eks.outputs.private_subnet_ids != null ? data.terraform_remote_state.eks.outputs.private_subnet_ids : []
+  # Não pode usar data source como default. Defina via tfvars ou CLI se necessário.
 }
 
 variable "db_security_group_ids" {
   description = "Security Groups que controlam o acesso ao RDS."
   type        = list(string)
-  default     = data.terraform_remote_state.eks.outputs.eks_security_group_ids != null ? data.terraform_remote_state.eks.outputs.eks_security_group_ids : []
+  # Não pode usar data source como default. Defina via tfvars ou CLI se necessário.
 }
 
 # DB Subnet Group (criado apenas quando enable_db=true)
 resource "aws_db_subnet_group" "main" {
   count      = var.enable_db ? 1 : 0
   name       = "${var.app_name}-db-subnet-group"
-  subnet_ids = var.db_subnet_ids
+  subnet_ids = length(var.db_subnet_ids) > 0 ? var.db_subnet_ids : (try(data.terraform_remote_state.eks.outputs.private_subnet_ids, []))
 
   tags = {
     Name = "${var.app_name}-db-subnet-group"
@@ -96,7 +96,7 @@ resource "aws_db_instance" "main" {
   username                = var.db_username
   password                = var.db_password
   db_subnet_group_name    = aws_db_subnet_group.main[0].name
-  vpc_security_group_ids  = var.db_security_group_ids
+  vpc_security_group_ids  = length(var.db_security_group_ids) > 0 ? var.db_security_group_ids : (try(data.terraform_remote_state.eks.outputs.eks_security_group_ids, []))
   skip_final_snapshot     = true
   publicly_accessible     = false
   backup_retention_period = 0
