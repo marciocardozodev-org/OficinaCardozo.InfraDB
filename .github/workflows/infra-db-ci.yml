@@ -49,12 +49,12 @@ jobs:
     - name: Terraform Plan
       if: github.event_name == 'pull_request'
       working-directory: ./terraform
-      run: terraform plan -input=false
+      run: terraform plan -input=false -var="enable_db=true"
 
     - name: Terraform Plan (push)
       if: env.DEPLOY_ENABLED == 'true'
       working-directory: ./terraform
-      run: terraform plan -input=false -out=tfplan
+      run: terraform plan -input=false -var="enable_db=true" -out=tfplan
 
     - name: Terraform Apply
       if: env.DEPLOY_ENABLED == 'true'
