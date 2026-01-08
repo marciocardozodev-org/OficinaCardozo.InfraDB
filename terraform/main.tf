@@ -9,6 +9,16 @@ terraform {
   }
 }
 
+# Importa outputs do Terraform do EKS para usar subnets e security group da mesma VPC
+data "terraform_remote_state" "eks" {
+  backend = "s3"
+  config = {
+    bucket = "oficina-cardozo-terraform-state"
+    key    = "eks/prod/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -52,13 +62,13 @@ variable "db_password" {
 variable "db_subnet_ids" {
   description = "Lista de subnets privadas onde o RDS será criado."
   type        = list(string)
-  default     = []
+  default     = data.terraform_remote_state.eks.outputs.private_subnet_ids != null ? data.terraform_remote_state.eks.outputs.private_subnet_ids : []
 }
 
 variable "db_security_group_ids" {
   description = "Security Groups que controlam o acesso ao RDS."
   type        = list(string)
-  default     = []
+  default     = data.terraform_remote_state.eks.outputs.eks_security_group_ids != null ? data.terraform_remote_state.eks.outputs.eks_security_group_ids : []
 }
 
 # DB Subnet Group (criado apenas quando enable_db=true)
