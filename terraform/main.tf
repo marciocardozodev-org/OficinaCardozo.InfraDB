@@ -62,12 +62,14 @@ variable "db_password" {
 variable "db_subnet_ids" {
   description = "Lista de subnets privadas onde o RDS será criado."
   type        = list(string)
+  default     = []
   # Não pode usar data source como default. Defina via tfvars ou CLI se necessário.
 }
 
 variable "db_security_group_ids" {
   description = "Security Groups que controlam o acesso ao RDS."
   type        = list(string)
+  default     = []
   # Não pode usar data source como default. Defina via tfvars ou CLI se necessário.
 }
 
