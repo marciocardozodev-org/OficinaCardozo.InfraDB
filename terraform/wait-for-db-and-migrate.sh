@@ -25,12 +25,18 @@ until PGPASSWORD="$RDS_PASS" psql -h "$RDS_HOST" -U "$RDS_USER" -d "$RDS_DB" -p 
   sleep 10
 done
 
-echo "Banco de dados disponível! Rodando migrations EF Core..."
-export PATH="$PATH:$DOTNET_ROOT:/home/runner/.dotnet/tools"
-export ConnectionStrings__DefaultConnection="$CONNECTION_STRING"
-export ASPNETCORE_ENVIRONMENT="Production"
-export API_PROJECT_PATH="$API_PROJECT_PATH"
-
 dotnet restore "$API_PROJECT_PATH/../OficinaCardozo.Infrastructure/OficinaCardozo.Infrastructure.csproj"
 dotnet restore "$API_PROJECT_PATH/OficinaCardozo.API.csproj"
 dotnet ef database update --project "$API_PROJECT_PATH/../OficinaCardozo.Infrastructure/OficinaCardozo.Infrastructure.csproj" --startup-project "$API_PROJECT_PATH/OficinaCardozo.API.csproj"
+
+echo "Banco de dados disponível! Executando script SQL de criação do banco..."
+# Caminho absoluto do script SQL gerado pelo EF Core
+SQL_SCRIPT_PATH="${API_PROJECT_PATH}/../create-db.sql"
+
+if [ ! -f "$SQL_SCRIPT_PATH" ]; then
+  echo "ERRO: Script SQL não encontrado em $SQL_SCRIPT_PATH. Abortando."
+  exit 1
+fi
+
+PGPASSWORD="$RDS_PASS" psql -h "$RDS_HOST" -U "$RDS_USER" -d "$RDS_DB" -p 5432 -f "$SQL_SCRIPT_PATH"
+echo "Script SQL executado com sucesso no RDS!"
