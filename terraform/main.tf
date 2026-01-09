@@ -61,20 +61,20 @@ variable "db_password" {
 }
 
 variable "db_subnet_ids" {
-  description = "Lista de subnets privadas onde o RDS será criado."
+  description = "Lista de subnets privadas onde o Aurora será criado."
   type        = list(string)
   default     = []
   # Não pode usar data source como default. Defina via tfvars ou CLI se necessário.
 }
 
 variable "db_security_group_ids" {
-  description = "Security Groups que controlam o acesso ao RDS."
+  description = "Security Groups que controlam o acesso ao Aurora."
   type        = list(string)
   default     = []
   # Não pode usar data source como default. Defina via tfvars ou CLI se necessário.
 }
 
-# DB Subnet Group (criado apenas quando enable_db=true)
+## Aurora DB Subnet Group (criado apenas quando enable_db=true)
 resource "aws_db_subnet_group" "main" {
   count      = var.enable_db ? 1 : 0
   name       = "${var.app_name}-db-subnet-group"
@@ -85,52 +85,63 @@ resource "aws_db_subnet_group" "main" {
   }
 }
 
-# Instância RDS PostgreSQL básica (criada apenas quando enable_db=true)
-resource "aws_db_instance" "main" {
-  count = var.enable_db ? 1 : 0
-
-  identifier              = "${var.app_name}-db"
-  engine                  = "postgres"
-  engine_version          = "15"
-  instance_class          = "db.t3.micro"
-  allocated_storage       = 20
-  storage_type            = "gp2"
-  db_name                 = "oficinacardozo"
-  username                = var.db_username
-  password                = var.db_password
-  db_subnet_group_name    = aws_db_subnet_group.main[0].name
-  vpc_security_group_ids  = length(var.db_security_group_ids) > 0 ? var.db_security_group_ids : (try(data.terraform_remote_state.eks.outputs.eks_security_group_ids, []))
-  skip_final_snapshot     = true
-  publicly_accessible     = false
-  backup_retention_period = 0
-  maintenance_window      = "mon:04:00-mon:05:00"
-
+## Aurora PostgreSQL Cluster (criado apenas quando enable_db=true)
+resource "aws_rds_cluster" "main" {
+  count                    = var.enable_db ? 1 : 0
+  cluster_identifier       = "${var.app_name}-aurora-cluster"
+  engine                   = "aurora-postgresql"
+  engine_version           = "15.3"
+  master_username          = var.db_username
+  master_password          = var.db_password
+  database_name            = "oficinacardozo"
+  vpc_security_group_ids   = length(var.db_security_group_ids) > 0 ? var.db_security_group_ids : (try(data.terraform_remote_state.eks.outputs.eks_security_group_ids, []))
+  db_subnet_group_name     = aws_db_subnet_group.main[0].name
+  skip_final_snapshot      = true
+  backup_retention_period  = 1
+  storage_encrypted        = true
+  apply_immediately        = true
   tags = {
-    Name = "${var.app_name}-postgresql"
+    Name = "${var.app_name}-aurora-cluster"
   }
 }
 
-  output "rds_host" {
-    value       = aws_db_instance.main[0].address
-    description = "Endpoint do RDS"
+resource "aws_rds_cluster_instance" "main" {
+  count               = var.enable_db ? 1 : 0
+  identifier          = "${var.app_name}-aurora-instance-1"
+  cluster_identifier  = aws_rds_cluster.main[0].id
+  instance_class      = "db.r6g.large"
+  engine              = aws_rds_cluster.main[0].engine
+  engine_version      = aws_rds_cluster.main[0].engine_version
+  publicly_accessible = false
+  db_subnet_group_name = aws_db_subnet_group.main[0].name
+  tags = {
+    Name = "${var.app_name}-aurora-instance-1"
   }
+}
 
-  output "rds_user" {
-    value       = aws_db_instance.main[0].username
-    description = "Usuário do RDS"
-  }
 
-  output "rds_password" {
-    value       = var.db_password
-    description = "Senha do RDS"
-    sensitive   = true
-  }
+output "rds_host" {
+  value       = aws_rds_cluster.main[0].endpoint
+  description = "Endpoint do Aurora Cluster"
+}
 
-  output "rds_db_name" {
-    value       = aws_db_instance.main[0].db_name
-    description = "Nome do banco no RDS"
-  }
+output "rds_reader_host" {
+  value       = aws_rds_cluster.main[0].reader_endpoint
+  description = "Endpoint de leitura do Aurora Cluster"
+}
 
-# TODO: importar o RDS existente (aws_db_instance.main) e migrar
-#       o provisionamento a partir deste repositório, alinhando nomes
-#       e parâmetros com o Terraform atual do projeto serverless.
+output "rds_user" {
+  value       = var.db_username
+  description = "Usuário do Aurora"
+}
+
+output "rds_password" {
+  value       = var.db_password
+  description = "Senha do Aurora"
+  sensitive   = true
+}
+
+output "rds_db_name" {
+  value       = aws_rds_cluster.main[0].database_name
+  description = "Nome do banco no Aurora"
+}
