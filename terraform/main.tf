@@ -4,7 +4,7 @@ resource "null_resource" "run_migrations" {
     command = <<EOT
       set -o pipefail
       bash ${path.module}/wait-for-db-and-migrate.sh 2>&1 | tee ${path.module}/run-migrations.log
-      EXIT_CODE=${PIPESTATUS[0]}
+      EXIT_CODE=$${PIPESTATUS[0]}
       echo "\n================ LOG COMPLETO DO SCRIPT ================\n"
       cat ${path.module}/run-migrations.log
       echo "\n================ FIM DO LOG ================\n"
