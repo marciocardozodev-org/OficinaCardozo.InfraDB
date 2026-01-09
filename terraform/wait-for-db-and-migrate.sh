@@ -5,7 +5,7 @@ set -e
 # CONNECTION_STRING, API_PROJECT_PATH, DOTNET_ROOT, DOTNET_VERSION
 
 echo "Aguardando o banco de dados responder na porta 5432..."
-RETRIES=30
+RETRIES=60
 until PGPASSWORD="$RDS_PASS" psql -h "$RDS_HOST" -U "$RDS_USER" -d "$RDS_DB" -p 5432 -c '\q' 2>/dev/null; do
   RETRIES=$((RETRIES-1))
   if [ $RETRIES -le 0 ]; then
@@ -13,7 +13,7 @@ until PGPASSWORD="$RDS_PASS" psql -h "$RDS_HOST" -U "$RDS_USER" -d "$RDS_DB" -p 
     exit 1
   fi
   echo "Aguardando... ($RETRIES tentativas restantes)"
-  sleep 5
+  sleep 10
 done
 
 echo "Banco de dados disponível! Rodando migrations EF Core..."
