@@ -94,10 +94,9 @@ jobs:
       run: |
         export PATH="$PATH:/home/runner/.dotnet/tools"
         CONNECTION_STRING="Host=${RDS_HOST};Port=5432;Database=${RDS_DB};Username=${RDS_USER};Password=${RDS_PASS};Ssl Mode=Require;Trust Server Certificate=true;"
+        export ConnectionStrings__DefaultConnection="$CONNECTION_STRING"
+        export ASPNETCORE_ENVIRONMENT="Production"
+        export CONFIGURACOESJWT__CHAVESECRETA="ZnE1b0h0b3pNQXpmdGRsa2RTc2IyN3dueVJkaWtvQ3dQazFFenU2WEdBSHB1bE93QmpHTlBnU0Q5TXl5SU5WODlRendCQzFyb0tFcFVTUldBTWQ3bDBNRlFhVjVpc25pVVBXNUt2RmUxVnZlQ2JHU29Eazk5N29UczJWMFAwbjI"
         dotnet restore app-code/OficinaCardozo.Infrastructure/OficinaCardozo.Infrastructure.csproj
         dotnet restore app-code/OficinaCardozo.API/OficinaCardozo.API.csproj
         dotnet ef database update --project app-code/OficinaCardozo.Infrastructure/OficinaCardozo.Infrastructure.csproj --startup-project app-code/OficinaCardozo.API/OficinaCardozo.API.csproj
-      env:
-        ConnectionStrings__DefaultConnection: ${{ env.CONNECTION_STRING }}
-        ASPNETCORE_ENVIRONMENT: "Production"
-        CONFIGURACOESJWT__CHAVESECRETA: "chave-fake-para-migrations"
