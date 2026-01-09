@@ -109,6 +109,30 @@ resource "aws_db_instance" "main" {
   }
 }
 
+  output "rds_host" {
+    value       = aws_db_instance.main[0].address
+    description = "Endpoint do RDS"
+    condition   = var.enable_db && length(aws_db_instance.main) > 0
+  }
+
+  output "rds_user" {
+    value       = aws_db_instance.main[0].username
+    description = "Usuário do RDS"
+    condition   = var.enable_db && length(aws_db_instance.main) > 0
+  }
+
+  output "rds_password" {
+    value       = var.db_password
+    description = "Senha do RDS"
+    sensitive   = true
+  }
+
+  output "rds_db_name" {
+    value       = aws_db_instance.main[0].db_name
+    description = "Nome do banco no RDS"
+    condition   = var.enable_db && length(aws_db_instance.main) > 0
+  }
+
 # TODO: importar o RDS existente (aws_db_instance.main) e migrar
 #       o provisionamento a partir deste repositório, alinhando nomes
 #       e parâmetros com o Terraform atual do projeto serverless.
