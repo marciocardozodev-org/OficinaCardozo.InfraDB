@@ -1,31 +1,4 @@
 # Executa migrations EF Core após o RDS estar disponível
-resource "null_resource" "run_migrations" {
-  provisioner "local-exec" {
-    command = <<EOT
-      bash -c '
-        set -e
-        set -x
-        bash ${path.module}/wait-for-db-and-migrate.sh 2>&1 | tee ${path.module}/run-migrations.log
-        EXIT_CODE=$${PIPESTATUS[0]}
-        echo "\n================ LOG COMPLETO DO SCRIPT ================\n"
-        cat ${path.module}/run-migrations.log
-        echo "\n================ FIM DO LOG ================\n"
-        exit $EXIT_CODE
-      '
-    EOT
-    environment = {
-      RDS_HOST        = aws_db_instance.main[0].address
-      RDS_USER        = var.db_username
-      RDS_PASS        = var.db_password # Apenas esta variável é sensível, mas não será marcada explicitamente
-      RDS_DB          = aws_db_instance.main[0].db_name
-      CONNECTION_STRING = "Host=${aws_db_instance.main[0].address};Port=5432;Database=${aws_db_instance.main[0].db_name};Username=${var.db_username};Password=${var.db_password};Ssl Mode=Require;Trust Server Certificate=true;"
-      API_PROJECT_PATH = "../../OficinaCardozo.App/OficinaCardozo.API"
-      DOTNET_ROOT      = "/usr/share/dotnet"
-      DOTNET_VERSION   = "8.0.x"
-    }
-  }
-  depends_on = [aws_db_instance.main]
-}
 terraform {
   required_version = ">= 1.0"
 
