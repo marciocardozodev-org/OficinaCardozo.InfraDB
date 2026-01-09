@@ -68,6 +68,7 @@ jobs:
         repository: marciocardozodev/OficinaCardozo.App
         path: app-code
         fetch-depth: 0
+        ref: master
 
     - name: Setup .NET para migrations
       if: env.DEPLOY_ENABLED == 'true'
