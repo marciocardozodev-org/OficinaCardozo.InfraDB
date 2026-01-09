@@ -3,17 +3,17 @@ resource "null_resource" "run_migrations" {
   provisioner "local-exec" {
     command = "bash ${path.module}/wait-for-db-and-migrate.sh"
     environment = {
-      RDS_HOST        = aws_db_instance.rds.address
+      RDS_HOST        = aws_db_instance.main[0].address
       RDS_USER        = var.rds_user
       RDS_PASS        = var.rds_password
       RDS_DB          = var.rds_db_name
-      CONNECTION_STRING = "Host=${aws_db_instance.rds.address};Port=5432;Database=${var.rds_db_name};Username=${var.rds_user};Password=${var.rds_password};Ssl Mode=Require;Trust Server Certificate=true;"
+      CONNECTION_STRING = "Host=${aws_db_instance.main[0].address};Port=5432;Database=${var.rds_db_name};Username=${var.rds_user};Password=${var.rds_password};Ssl Mode=Require;Trust Server Certificate=true;"
       API_PROJECT_PATH = "../../OficinaCardozo.App/OficinaCardozo.API"
       DOTNET_ROOT      = "/usr/share/dotnet"
       DOTNET_VERSION   = "8.0.x"
     }
   }
-  depends_on = [aws_db_instance.rds]
+  depends_on = [aws_db_instance.main]
 }
 terraform {
   required_version = ">= 1.0"
