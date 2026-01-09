@@ -4,10 +4,10 @@ resource "null_resource" "run_migrations" {
     command = "bash ${path.module}/wait-for-db-and-migrate.sh"
     environment = {
       RDS_HOST        = aws_db_instance.main[0].address
-      RDS_USER        = var.rds_user
-      RDS_PASS        = var.rds_password
-      RDS_DB          = var.rds_db_name
-      CONNECTION_STRING = "Host=${aws_db_instance.main[0].address};Port=5432;Database=${var.rds_db_name};Username=${var.rds_user};Password=${var.rds_password};Ssl Mode=Require;Trust Server Certificate=true;"
+      RDS_USER        = var.db_username
+      RDS_PASS        = var.db_password
+      RDS_DB          = aws_db_instance.main[0].db_name
+      CONNECTION_STRING = "Host=${aws_db_instance.main[0].address};Port=5432;Database=${aws_db_instance.main[0].db_name};Username=${var.db_username};Password=${var.db_password};Ssl Mode=Require;Trust Server Certificate=true;"
       API_PROJECT_PATH = "../../OficinaCardozo.App/OficinaCardozo.API"
       DOTNET_ROOT      = "/usr/share/dotnet"
       DOTNET_VERSION   = "8.0.x"
