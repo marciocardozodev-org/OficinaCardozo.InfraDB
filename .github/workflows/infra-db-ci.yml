@@ -62,6 +62,7 @@ jobs:
       run: terraform apply -input=false -auto-approve tfplan
 
     - name: Checkout projeto de app (migrations)
+      if: env.DEPLOY_ENABLED == 'true'
       uses: actions/checkout@v4
       with:
         repository: marciocardozodev/OficinaCardozo.App
@@ -69,14 +70,17 @@ jobs:
         fetch-depth: 0
 
     - name: Setup .NET para migrations
+      if: env.DEPLOY_ENABLED == 'true'
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Instalar dotnet-ef
+      if: env.DEPLOY_ENABLED == 'true'
       run: dotnet tool install --global dotnet-ef --version 8.0.11
 
     - name: Obter outputs do RDS
+      if: env.DEPLOY_ENABLED == 'true'
       id: rds_outputs
       working-directory: ./terraform
       run: |
@@ -86,6 +90,7 @@ jobs:
         echo "RDS_DB=$(terraform output -raw rds_db_name)" >> $GITHUB_ENV
 
     - name: Rodar migrations EF Core no RDS
+      if: env.DEPLOY_ENABLED == 'true'
       run: |
         export PATH="$PATH:/home/runner/.dotnet/tools"
         CONNECTION_STRING="Host=${RDS_HOST};Port=5432;Database=${RDS_DB};Username=${RDS_USER};Password=${RDS_PASS};Ssl Mode=Require;Trust Server Certificate=true;"
