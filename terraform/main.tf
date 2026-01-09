@@ -90,7 +90,7 @@ resource "aws_rds_cluster" "main" {
   count                    = var.enable_db ? 1 : 0
   cluster_identifier       = "${var.app_name}-aurora-cluster"
   engine                   = "aurora-postgresql"
-  engine_version           = "15.2"
+  engine_version           = "15.15"
   master_username          = var.db_username
   master_password          = var.db_password
   database_name            = "oficinacardozo"
