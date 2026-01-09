@@ -2,13 +2,16 @@
 resource "null_resource" "run_migrations" {
   provisioner "local-exec" {
     command = <<EOT
-      set -o pipefail
-      bash ${path.module}/wait-for-db-and-migrate.sh 2>&1 | tee ${path.module}/run-migrations.log
-      EXIT_CODE=$${PIPESTATUS[0]}
-      echo "\n================ LOG COMPLETO DO SCRIPT ================\n"
-      cat ${path.module}/run-migrations.log
-      echo "\n================ FIM DO LOG ================\n"
-      exit $EXIT_CODE
+      bash -c '
+        set -e
+        set -x
+        bash ${path.module}/wait-for-db-and-migrate.sh 2>&1 | tee ${path.module}/run-migrations.log
+        EXIT_CODE=$${PIPESTATUS[0]}
+        echo "\n================ LOG COMPLETO DO SCRIPT ================\n"
+        cat ${path.module}/run-migrations.log
+        echo "\n================ FIM DO LOG ================\n"
+        exit $EXIT_CODE
+      '
     EOT
     environment = {
       RDS_HOST        = aws_db_instance.main[0].address
