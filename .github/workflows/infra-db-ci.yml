@@ -97,6 +97,7 @@ jobs:
         export ConnectionStrings__DefaultConnection="$CONNECTION_STRING"
         export ASPNETCORE_ENVIRONMENT="Production"
         export CONFIGURACOESJWT__CHAVESECRETA="ZnE1b0h0b3pNQXpmdGRsa2RTc2IyN3dueVJkaWtvQ3dQazFFenU2WEdBSHB1bE93QmpHTlBnU0Q5TXl5SU5WODlRendCQzFyb0tFcFVTUldBTWQ3bDBNRlFhVjVpc25pVVBXNUt2RmUxVnZlQ2JHU29Eazk5N29UczJWMFAwbjI"
+        export API_PROJECT_PATH="app-code/OficinaCardozo.API"
         dotnet restore app-code/OficinaCardozo.Infrastructure/OficinaCardozo.Infrastructure.csproj
         dotnet restore app-code/OficinaCardozo.API/OficinaCardozo.API.csproj
         dotnet ef database update --project app-code/OficinaCardozo.Infrastructure/OficinaCardozo.Infrastructure.csproj --startup-project app-code/OficinaCardozo.API/OficinaCardozo.API.csproj
