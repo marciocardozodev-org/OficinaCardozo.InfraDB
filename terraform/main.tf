@@ -121,7 +121,7 @@ resource "aws_rds_cluster_instance" "main" {
 
 
 output "rds_host" {
-  value       = aws_rds_cluster.main[0].endpoint
+  value       = length(aws_rds_cluster.main) > 0 ? aws_rds_cluster.main[0].endpoint : null
   description = "Endpoint do Aurora Cluster"
 }
 
