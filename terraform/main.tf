@@ -1,3 +1,12 @@
+output "db_subnet_ids" {
+  value       = try(data.terraform_remote_state.eks.outputs.private_subnet_ids, [])
+  description = "Subnets privadas usadas pelo Aurora (propagadas do EKS)"
+}
+
+output "db_security_group_ids" {
+  value       = try(data.terraform_remote_state.eks.outputs.eks_security_group_ids, [])
+  description = "Security Groups usados pelo Aurora (propagados do EKS)"
+}
 # Executa migrations EF Core após o RDS estar disponível
 terraform {
   required_version = ">= 1.0"
