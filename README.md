@@ -13,4 +13,11 @@ Repositório de infraestrutura como código para provisionamento do banco de dad
 3. Execute os scripts Terraform/CloudFormation para provisionar o banco.
 
 ## Diagrama da Arquitetura
-<!-- Insira aqui o diagrama da arquitetura deste repositório quando disponível -->
+```mermaid
+flowchart LR
+    App[OficinaCardozo.API (EKS)]
+    Lambda[AWS Lambda (Autenticação)]
+    DB[(Aurora)]
+    App --> DB
+    Lambda --> DB
+```
