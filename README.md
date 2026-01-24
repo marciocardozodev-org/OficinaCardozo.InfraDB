@@ -15,9 +15,9 @@ Repositório de infraestrutura como código para provisionamento do banco de dad
 ## Diagrama da Arquitetura
 ```mermaid
 flowchart LR
-    App[OficinaCardozo.API (EKS)]
-    Lambda[AWS Lambda (Autenticação)]
-    DB[(Aurora)]
+    App[OficinaCardozo.API EKS]
+    Lambda[AWS Lambda Autenticação]
+    DB[Aurora]
     App --> DB
     Lambda --> DB
 ```
